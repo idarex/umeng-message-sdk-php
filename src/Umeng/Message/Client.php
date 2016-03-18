@@ -174,17 +174,17 @@ class Client
             }
         }
 
-        $http = new \HTTPRequest($this->conf['api_uri_prefix'] . 'api/send', HTTP_METH_POST);
-        $http->setBody(json_encode($newData));
-        $http->send();
-        $body = $http->getResponseBody();
-        if($http->getResponseCode() != 200) {
-            throw new Exception($body);
-        }
-        $tmp = json_decode($body, true);
+        $ch = curl_init($this->conf['api_uri_prefix'] . 'api/send');
+        curl_setopt( $ch, CURLOPT_POSTFIELDS, json_encode($newData));
+        curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        $tmp = json_decode($result, true);
 
         if(!isset($tmp['ret']) || $tmp['ret'] != 'SUCCESS') {
-            throw new Exception($body);
+            throw new Exception($result);
         }
         return true;
     }
